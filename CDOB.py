@@ -9,8 +9,8 @@ from scipy.integrate import solve_ivp
 # System parameters
 alpha = 5.0                   # PD controller parameter
 Kp, Kd = alpha**2, 2*alpha    # PD gains
-tau_d = 0.1                   # Output delay (seconds)
-omega_net = 50.0              # CDOB filter cutoff frequency (rad/s)
+tau_d = 0.045                   # Output delay (seconds)
+omega_net = 100.0              # CDOB filter cutoff frequency (rad/s)
 
 # Simulation parameters
 t_end, dt = 5.0, 0.001
@@ -78,7 +78,9 @@ class LowPassFilter:
     def filter(self, x):
         if self.omega_c == 0.0:
             return 0.0
-        y = self.y_prev + self.omega_c * (x - self.y_prev) * self.dt
+        alpha = self.dt*self.omega_c / (1.0 + self.omega_c*self.dt)
+        y = self.y_prev + alpha * (x - self.y_prev) 
+        # y = self.y_prev + self.omega_c * (x - self.y_prev) * self.dt
         self.y_prev = y
         return y
 
@@ -303,6 +305,7 @@ def plot_detailed():
 
 # Show essential plots
 plot_essential()
+# plot_detailed()
 
 # Performance analysis
 rms_cdob = np.sqrt(np.mean((data['ideal']['x'] - data['cdob']['x_delayed'])**2))
